@@ -108,35 +108,74 @@ fn data_frame_example_3() -> Result<(), PolarsError>
                 .alias("floats_with_decimal_as_integers"),
         ])
         .collect()?;
+
+
     println!("{}", &out);
 
     return Ok(());
 }
 
 
+fn data_frame_example_4() -> Result<(), PolarsError>
+{
 
+    let df = df! (
+        "integers" => &[1, 2, 3, 4, 5],
+        "float" => &[4.0, 5.03, 6.0, 7.0, 8.0],
+        "floats_as_string" => &["4.0", "5.0", "6.0", "7.0", "8.0"],
+)?;
+
+    let out = df
+        .clone()
+        .lazy()
+        .select([
+            col("integers").cast(DataType::String),
+            col("float").cast(DataType::String),
+            col("floats_as_string").cast(DataType::Float64),
+        ])
+        .collect()?;
+
+    println!("df={}", &df);
+
+    println!("out={}", &out);
+
+    return Ok(());
+}
+fn data_frame_example_5() -> Result<(), PolarsError>
+{
+
+    let df = df! (
+        "x" => &["4.0", "5.0", "6.0", "7.0", "8.0"],
+        "y" => &["1", "2", "3", "4", "5"],
+        "z" => &["40.0", "50.0", "60.0", "70.0", "80.0"],
+)?;
+
+    let out = df
+        .clone()
+        .lazy()
+        .select([
+            col("*").cast(DataType::Float64),
+        ])
+        .collect()?;
+
+    println!("df={}", &df);
+
+    println!("out={}", &out);
+
+    return Ok(());
+}
 
 //fn main() -> Result<(), PolarsError>
 fn main() -> Result<(), polars::prelude::PolarsError>
 {
-    series_example_1();
-    data_frame_example_1();
-    data_frame_example_2()?;
-    data_frame_example_3()?;
+    // series_example_1();
+    // data_frame_example_1();
+    // data_frame_example_2()?;
+    // data_frame_example_3()?;
 
-    //     let mut arr = [0f64; 5];
-    //     thread_rng().fill(&mut arr);
-    //
-    //     let df = df! (
-    //     "nrs" => &[Some(1), Some(2), Some(3), None, Some(5)],
-    //     "names" => &[Some("foo"), Some("ham"), Some("spam"), Some("eggs"), None],
-    //     "random" => &arr,
-    //     "groups" => &["A", "A", "B", "C", "B"])?;
-    //
-    //
-    //     println!("{}", &df);
-    //     //println!("Hello, world!");
-    // }
+    //    data_frame_example_4()?;
+    data_frame_example_5()?;
+
 
 
     return Ok(());
