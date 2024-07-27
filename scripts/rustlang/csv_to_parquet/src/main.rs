@@ -1,3 +1,7 @@
+use polars::prelude::*;
+use polars::chunked_array::ChunkedArray;
+//use polars::series::IsUtf8;
+
 // use std::fs::File;
 // use indicatif::{ProgressBar, ProgressStyle};
 // use std::path::PathBuf;
@@ -133,10 +137,70 @@ use std::path::PathBuf;
 
 //use parquet::file::writer;
 use polars::prelude::*;
-//use polars::prelude::CsvReader;
-
+// //use polars::prelude::CsvReader;
+// fn convert_column_to_float(df: &mut DataFrame, column_name: &str) -> Result<(), PolarsError> {
+//     // Select the column as a Series
+//     let series = df.column(column_name)?;
+//
+//     // Ensure the column is a Utf8Chunked
+//     let utf8_series = series.utf8()?;
+//
+//     // Convert the Utf8Chunked to a Float64Chunked
+//     let float_series = utf8_series
+//         .into_iter()
+//         .map(|opt_str| opt_str.and_then(|s| s.parse::<f64>().ok()))
+//         .collect::<Float64Chunked>();
+//
+//     // Replace the original column with the new float column
+//     df.replace(column_name, float_series.into_series())?;
+//
+//     Ok(())
+// }
 //use parquet::file::writer;
 //use parquet;
+use polars::prelude::*;
+//use polars::series::IsUtf8;
+//use polars::series::Series;
+
+
+
+use polars::prelude::*;
+use polars::datatypes::DataType;
+
+
+// fn convert_columns_to_float_inplace_v1<Float64Array>(df: &mut DataFrame) -> Result<(), PolarsError> {
+//     for name in df.get_column_names() {
+//         let s = df.column(name)?;
+//         if s.dtype() == &DataType::String {
+//             let ca = s.utf8()?;
+//             let fa = ca.as_str().unwrap().parse::<Float64Array>().map_err(|_| {
+//                 PolarsError::ComputeError(format!("Error converting column '{}' to float", name))
+//             })?;
+//             df.replace_column(name, &fa.into_series())?;
+//         }
+//     }
+//     Ok(())
+// }
+
+fn convert_columns_to_float_inplace<Float64Array>(df: &mut DataFrame) -> Result<(), PolarsError> {
+    for name in df.get_column_names()
+    {
+        let s = df.column(name)?;
+        let fa=s.cast(&DataType::Float64)?;
+        // if s.dtype() == &DataType::String {
+        //     let ca = s.utf8()?;
+        //     let fa = ca.as_str().unwrap().parse::<Float64Array>().map_err(|_| {
+        //         PolarsError::ComputeError(format!("Error converting column '{}' to float", name))
+        //     })?;
+        // }
+        //df.replace_column(?name, fa);
+
+
+        df.replace(name, fa);
+
+    }
+    Ok(())
+}
 
 fn main() -> Result<(), PolarsError> {
     // Parse command-line arguments
@@ -178,18 +242,23 @@ fn main() -> Result<(), PolarsError> {
 
         let mut df: DataFrame = df.clone();
 
-        // Convert columns from strings to floats if needed
-        for column in df.get_columns() {
-             if let Ok(float_col) = column.utf8().unwrap().cast(&DataType::Float64)
-             {
-                 df.with_column(float_col)?;
-             }
 
 
-            // if let Ok(float_col) = column.cast(&DataType::Float64) {
-            //     df.with_column(float_col)?;
-            // }
-        }
+        convert_columns_to_float_inplace(&mut df).expect("Conversion failed");
+
+        // // Convert columns from strings to floats if needed
+        // for column in df.get_columns() {
+        //     //if let Ok(float_col) = column.utf8().unwrap().cast(&DataType::Float64)
+        //     if let Ok(float_col) = column.cast(&DataType::Float64)
+        //     {
+        //          df.with_column(float_col)?;
+        //      }
+        //
+        //
+        //     // if let Ok(float_col) = column.cast(&DataType::Float64) {
+        //     //     df.with_column(float_col)?;
+        //     // }
+        // }
         // //let mut df2 = df_or_result?.clone();
         // let df = match df_or_result
         // {
