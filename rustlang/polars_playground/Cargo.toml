@@ -1,0 +1,10 @@
+[package]
+name = "polars_playground"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+polars = {version="0.41.3", features = ["lazy"]}
+rand = "0.8.5"
+chrono = "0.4.38"
+stdext = "0.3.3"
