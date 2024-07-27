@@ -1,3 +1,7 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
+
 use polars::prelude::*;
 use polars::chunked_array::ChunkedArray;
 //use polars::series::IsUtf8;
@@ -182,25 +186,25 @@ use polars::datatypes::DataType;
 //     Ok(())
 // }
 
-fn convert_columns_to_float_inplace<Float64Array>(df: &mut DataFrame) -> Result<(), PolarsError> {
-    for name in df.get_column_names()
-    {
-        let s = df.column(name)?;
-        let fa=s.cast(&DataType::Float64)?;
-        // if s.dtype() == &DataType::String {
-        //     let ca = s.utf8()?;
-        //     let fa = ca.as_str().unwrap().parse::<Float64Array>().map_err(|_| {
-        //         PolarsError::ComputeError(format!("Error converting column '{}' to float", name))
-        //     })?;
-        // }
-        //df.replace_column(?name, fa);
-
-
-        df.replace(name, fa);
-
-    }
-    Ok(())
-}
+// fn convert_columns_to_float_inplace<Float64Array>(df: &mut DataFrame) -> Result<(), PolarsError> {
+//     for name in df.get_column_names()
+//     {
+//         let s = df.column(name)?;
+//         let fa=s.cast(&DataType::Float64)?;
+//         // if s.dtype() == &DataType::String {
+//         //     let ca = s.utf8()?;
+//         //     let fa = ca.as_str().unwrap().parse::<Float64Array>().map_err(|_| {
+//         //         PolarsError::ComputeError(format!("Error converting column '{}' to float", name))
+//         //     })?;
+//         // }
+//         //df.replace_column(?name, fa);
+//
+//
+//         df.replace(name, fa);
+//
+//     }
+//     Ok(())
+// }
 
 fn main() -> Result<(), PolarsError> {
     // Parse command-line arguments
@@ -240,30 +244,18 @@ fn main() -> Result<(), PolarsError> {
             Err(e) => return Err(e.into()),
         };
 
-        let mut df: DataFrame = df.clone();
+        //let mut df: DataFrame = df.clone();
 
+        let mut df = df
+            .clone()
+            .lazy()
+            .select([
+                col("*").cast(DataType::Float64),
+            ])
+            .collect()?;
 
+        //convert_columns_to_float_inplace(&mut df).expect("Conversion failed");
 
-        convert_columns_to_float_inplace(&mut df).expect("Conversion failed");
-
-        // // Convert columns from strings to floats if needed
-        // for column in df.get_columns() {
-        //     //if let Ok(float_col) = column.utf8().unwrap().cast(&DataType::Float64)
-        //     if let Ok(float_col) = column.cast(&DataType::Float64)
-        //     {
-        //          df.with_column(float_col)?;
-        //      }
-        //
-        //
-        //     // if let Ok(float_col) = column.cast(&DataType::Float64) {
-        //     //     df.with_column(float_col)?;
-        //     // }
-        // }
-        // //let mut df2 = df_or_result?.clone();
-        // let df = match df_or_result
-        // {
-        //     Ok(df)  =>
-        //     {
 
         // Write the DataFrame to Parquet file
         let file = OpenOptions::new()
@@ -291,7 +283,7 @@ fn main() -> Result<(), PolarsError> {
         //     .with_compression(ParquetCompression::Snappy)
         //     .finish(&df)?;
 
-        //println!("{:?}", df);
+        //println!("df{:?}", df);
         processed_files += 1;
         bar.set_message(format!("Processed {} files", processed_files));
         bar.inc(1);
