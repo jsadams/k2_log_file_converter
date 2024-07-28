@@ -1,28 +1,25 @@
-
-
+use humantime::{format_duration, FormattedDuration};
 use std::time::Duration;
 use std::time::Instant;
-use humantime::{format_duration, FormattedDuration};
 
 pub struct Stopwatch {
-    start_time:  Instant,
-
+    start_time: Instant,
 }
 
 impl Stopwatch {
-  pub  fn new() -> Stopwatch {
+    pub fn new() -> Stopwatch {
         Stopwatch {
-            start_time: Instant::now()}
-
+            start_time: Instant::now(),
+        }
     }
 
-    pub  fn elapsed(&self) -> Duration {
+    pub fn elapsed(&self) -> Duration {
         let duration = self.start_time.elapsed();
-        return duration
+        return duration;
     }
 
-    pub  fn elapsed_formatted(&self) -> FormattedDuration {
-                return format_duration(self.elapsed())
+    pub fn elapsed_formatted(&self) -> FormattedDuration {
+        return format_duration(self.elapsed());
     }
 }
 

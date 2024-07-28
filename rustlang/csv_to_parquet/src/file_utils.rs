@@ -1,21 +1,16 @@
-use std::path::{Path, PathBuf};
-use std::io;
 use std::fs;
+use std::io;
+use std::path::{Path, PathBuf};
 
-pub fn prepend_output_dir_to_filename(output_dir: &str, old_filename: &str) -> String
-{
-
+pub fn prepend_output_dir_to_filename(output_dir: &str, old_filename: &str) -> String {
     let old_filename_as_pathbuf = PathBuf::from(old_filename);
     let output_dir_as_pathbuf = PathBuf::from(output_dir);
 
-    let new_filename_as_pathbuf=output_dir_as_pathbuf.join(old_filename_as_pathbuf);
+    let new_filename_as_pathbuf = output_dir_as_pathbuf.join(old_filename_as_pathbuf);
 
     return new_filename_as_pathbuf.to_str().unwrap().to_string();
-
-
 }
-pub fn replace_file_extension(csv_filename: &str, new_extension: &str) -> String
-{
+pub fn replace_file_extension(csv_filename: &str, new_extension: &str) -> String {
     /*
         new extension should have a dot in it eg ".parquet"
 
@@ -29,27 +24,22 @@ pub fn replace_file_extension(csv_filename: &str, new_extension: &str) -> String
     // Create output Parquet filename
 
     //et combined_path = path1.join(path2).join(path3);
-    let new_filename = PathBuf::from(format!("{}{}", basename,new_extension));
-
-
+    let new_filename = PathBuf::from(format!("{}{}", basename, new_extension));
 
     return new_filename.to_str().unwrap().to_string();
-
-
 }
-
 
 pub fn create_dir_if_not_exists(path: &str) -> io::Result<()> {
     let path = Path::new(path);
     if !path.exists() {
         fs::create_dir_all(path)?;
 
-        println!("Created directory {}",path.to_str().unwrap());
+        println!("Created directory {}", path.to_str().unwrap());
     }
     Ok(())
 }
 
-pub fn get_file_size(file_path: &str) -> Result<u64,std::io::Error> {
+pub fn get_file_size(file_path: &str) -> Result<u64, std::io::Error> {
     let path = Path::new(file_path);
 
     // Get the metadata of the file

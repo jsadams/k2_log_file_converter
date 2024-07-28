@@ -1,10 +1,10 @@
-use std::fs::OpenOptions;
 use polars::error::PolarsError;
 use polars::frame::DataFrame;
 use polars::prelude::{CsvParseOptions, CsvReadOptions, ParquetCompression, ParquetWriter};
+use std::fs::OpenOptions;
 
-use polars::prelude::*;
 use polars::chunked_array::ChunkedArray;
+use polars::prelude::*;
 //use polars::series::IsUtf8;
 
 // use std::fs::File;
@@ -134,7 +134,6 @@ use polars::chunked_array::ChunkedArray;
 //     Ok(())
 // }
 
-
 //use parquet::file::writer;
 use polars::prelude::*;
 // //use polars::prelude::CsvReader;
@@ -162,11 +161,8 @@ use polars::prelude::*;
 //use polars::series::IsUtf8;
 //use polars::series::Series;
 
-
-
-use polars::prelude::*;
 use polars::datatypes::DataType;
-
+use polars::prelude::*;
 
 // fn convert_columns_to_float_inplace_v1<Float64Array>(df: &mut DataFrame) -> Result<(), PolarsError> {
 //     for name in df.get_column_names() {
@@ -202,14 +198,12 @@ use polars::datatypes::DataType;
 //     Ok(())
 // }
 
-
-pub fn convert_csv_file_to_parquet_file(csv_path:&str, output_parquet_path:&str) -> Result<(), PolarsError>
-{
-    let mut my_parse_options=CsvParseOptions::default();
-    my_parse_options.separator=b' ';
-
-
-
+pub fn convert_csv_file_to_parquet_file(
+    csv_path: &str,
+    output_parquet_path: &str,
+) -> Result<(), PolarsError> {
+    let mut my_parse_options = CsvParseOptions::default();
+    my_parse_options.separator = b' ';
 
     // Read the CSV file directly
     //let file = OpenOptions::new().read(true).open(&csv_path)?;
@@ -229,12 +223,10 @@ pub fn convert_csv_file_to_parquet_file(csv_path:&str, output_parquet_path:&str)
             CsvParseOptions::default()
                 .with_separator(b' ')
                 .with_truncate_ragged_lines(true)
-                .with_missing_is_null(true)
-                //.with_null_values(999)
+                .with_missing_is_null(true), //.with_null_values(999)
         )
         .try_into_reader_with_file_path(Some(csv_path.into()))?
         .finish();
-
 
     let df = match df_raw_result {
         Ok(v) => v,
@@ -266,5 +258,4 @@ pub fn convert_csv_file_to_parquet_file(csv_path:&str, output_parquet_path:&str)
     writer.finish(&mut df)?; // Handle potential error here
 
     return Ok(());
-
 }
