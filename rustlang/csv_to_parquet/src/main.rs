@@ -5,16 +5,25 @@ mod file_utils;
 mod csv_to_parquet_utils;
 
 
+mod stopwatch;
+
 //use std::fs::{File, OpenOptions};
+use indicatif::ProgressStyle;
 use std::fs::OpenOptions;
 //use indicatif::{ProgressBar, ProgressStyle};
 use indicatif::ProgressBar;
 use std::path::PathBuf;
 
-
+//use std::time::Instant;
+//use humantime::format_duration;
 use polars::error::PolarsError;
 
 fn main() -> Result<(), PolarsError> {
+
+    let sw1=stopwatch::Stopwatch::new();
+
+    //let start = Instant::now();
+
     // Parse command-line arguments
     let mut args = std::env::args().skip(1);
 
@@ -42,6 +51,8 @@ fn main() -> Result<(), PolarsError> {
         //let csv_filename: &str= &csv_filename;
         //let parquet_filename: &str=&parquet_filename;
 
+        let sw2=stopwatch::Stopwatch::new();
+
         csv_to_parquet_utils::convert_csv_file_to_parquet_file(&csv_filename, &parquet_filename)?;
 
 
@@ -56,8 +67,9 @@ fn main() -> Result<(), PolarsError> {
         print!("\n");
         print!("Converted {} ({} bytes)",csv_filename,file_size_csv);
         print!("---> {} ({} bytes)",parquet_filename,file_size_parquet);
-        print!("\t delta file size: {} bytes", delta_file_size);
-        print!(" ratio={:.2}" ,file_size_ratio);
+        print!("\t delta file size: {:.2} Mbytes", delta_file_size as f64 /(1024.0*1024.0));
+        print!(" reduction ratio={:.2} %" ,file_size_ratio*100.0);
+        print!(" dt={}" ,sw2.elapsed().as_secs());
 
 
         processed_files += 1;
@@ -72,6 +84,12 @@ fn main() -> Result<(), PolarsError> {
 
     println!("{} CSV files successfully converted to Parquet", file_count);
     println!(" total_delta_file_size={:.4} Mb", total_delta_file_size/(1024*1024));
+
+    // let total_duration = sw1.elapsed();
+    // let formatted_duration=format_duration(total_duration);
+
+
+    println!("Total Time elapsed in foo() is: {:?}", sw1.elapsed_formatted());
 
     Ok(())
 }

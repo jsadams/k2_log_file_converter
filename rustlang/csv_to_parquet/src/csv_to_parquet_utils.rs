@@ -224,7 +224,14 @@ pub fn convert_csv_file_to_parquet_file(csv_path:&str, output_parquet_path:&str)
 
     let df_raw_result = CsvReadOptions::default()
         .with_has_header(true)
-        .with_parse_options(CsvParseOptions::default().with_separator(b' '))
+        .with_ignore_errors(true)
+        .with_parse_options(
+            CsvParseOptions::default()
+                .with_separator(b' ')
+                .with_truncate_ragged_lines(true)
+                .with_missing_is_null(true)
+                //.with_null_values(999)
+        )
         .try_into_reader_with_file_path(Some(csv_path.into()))?
         .finish();
 

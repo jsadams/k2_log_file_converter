@@ -9,4 +9,5 @@ edition = "2021"
 indicatif = "0.17.8"
 parquet = "52.0.0"
 polars = { version = "0.40.0", features = ["avro", "csv", "parquet","lazy","serde"] }
+humantime = "2.1.0"
 
