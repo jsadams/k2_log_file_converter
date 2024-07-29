@@ -5,7 +5,7 @@ mod csv_to_parquet_utils;
 mod file_utils;
 
 mod cli_interface_builder;
-mod cli_interface_derive;
+///mod cli_interface_derive;
 mod stopwatch;
 // mod file_processing_utils;
 
@@ -20,57 +20,17 @@ use clap::Parser;
 use indicatif::ProgressBar;
 use indicatif::ProgressStyle;
 use std::path::PathBuf;
-
+use clap::builder::Str;
 //use std::time::Instant;
 //use humantime::format_duration;
 use polars::error::PolarsError;
-// use clap::Arg;
-// use clap::Command;
-// // use clap::{arg, command, value_parser, ArgAction, Command};
-// // //use clap::{App, Subcommand};
-// // use clap::App;
-//
-// //#[derive(Parser)]
-// //#[command(version, about, long_about = None)]
-//
-// use clap::{Parser, Subcommand};
-//
-// #[derive(Parser, Debug)]
-// struct Cli {
-//     #[clap(short, long, help = "Forces the operation")]
-//     force: bool,
-//
-//     #[clap(short = 'o', long = "output-dir", value_name = "DIR", help = "Specifies the output directory", default_value = "./output")]
-//     output_dir: String,
-//
-//     #[clap(short = 'v', long = "verbosity", value_name = "LEVEL", help = "Set verbosity level (0-10)", default_value_t = 2, value_parser = clap::value_parser!(i32).range(0..=10))]
-//     verbosity: i32,
-//
-//     // #[clap(short = 'g', long = "gain", value_name = "VALUE", help = "Set gain value (float)", default_value_t = 1.0, value_parser = clap::value_parser!(f32))]
-//     // gain: f32,
-//
-//     #[clap(value_name = "PATHS", help = "Paths to files or directories", num_args = 1..)]
-//     paths: Vec<String>,
-// }
-// use cli_interface_derive;
-// use cli_interface_builder;
 
-//Result<(), Box<dyn std::error::Error>>
 fn main() -> Result<(), PolarsError> {
-    let (output_dir, force, verbosity, args) = cli_interface_builder::process_cli_via_builder_api();
+    let (mut output_dir, force, verbosity, args) = cli_interface_builder::process_cli_via_builder_api();
 
     //let (output_dir, force, verbosity, args)= cli_interface_derive::process_cli_via_derive_api();
 
-    // let cli = cli_interface::Cli::parse();
-    //
-    //
-    //
-    // // Access arguments as needed
-    // let args: Vec<&str> = cli.paths.iter().map(|s| s as &str).collect();
-    // let verbosity = cli.verbosity;
-    // //let gain = cli.gain;
-    // let force = cli.force;
-    // let output_dir=cli.output_dir;
+    let mut files:Vec<String>=args.clone();
 
     if args.len() == 1 {
         // if there is only one arg on the command line, check if it is a directory
@@ -78,7 +38,20 @@ fn main() -> Result<(), PolarsError> {
         let first_element: &str = args.first().expect("no element");
         let metadata = fs::metadata(first_element)?;
         if metadata.is_dir() {
-            print!("{} is a directory", first_element)
+            let input_directory=first_element;
+
+            print!("{} is a directory", input_directory);
+            let wildcard_pattern="*.dat";
+
+            let dir_and_pattern=file_utils::os_path_join(&input_directory, wildcard_pattern);
+
+            files=file_utils::get_files_matching_pattern(&dir_and_pattern).unwrap().clone();
+
+            //let args=OK(args);
+
+            output_dir=input_directory.to_owned() + "_parquet";
+
+
         }
     }
 
@@ -90,12 +63,12 @@ fn main() -> Result<(), PolarsError> {
 
     println!("Force: {}", force);
     println!("Output directory: {}", output_dir);
-    println!("Additional arguments: {:?}", args);
+    println!("Files to process: {:?}", files);
 
     // Parse command-line arguments
 
     let mut processed_files = 0;
-    let total_files = args.len();
+    let total_files = files.len();
 
     //let output_dir = "./out";
     file_utils::create_dir_if_not_exists(&output_dir)?;
@@ -114,11 +87,10 @@ fn main() -> Result<(), PolarsError> {
     let mut total_delta_file_size = 0 as i64;
 
     // main loop
-    for csv_filename in args {
+    for csv_filename in files {
         //while let Some(csv_filename) = args.next() {
         let parquet_filename = file_utils::replace_file_extension(&csv_filename, ".parquet");
-        let parquet_filename =
-            file_utils::prepend_output_dir_to_filename(&output_dir, &parquet_filename);
+        let parquet_filename = file_utils::os_path_join(&output_dir, &parquet_filename);
 
         //let csv_filename: &str= &csv_filename;
         //let parquet_filename: &str=&parquet_filename;
@@ -183,7 +155,7 @@ fn main() -> Result<(), PolarsError> {
         total_delta_file_size / (1024 * 1024)
     );
     println!(
-        "Total Time elapsed in foo() is: {:?}",
+        "Total Time elapsed in is: {:?}",
         sw1.elapsed_formatted_human()
     );
 

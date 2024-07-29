@@ -65,7 +65,7 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
 
     //let args: Vec<&str> = matches.get_many::<String>("paths").unwrap().collect();
     let args: Vec<String> = matches
-        .get_many::<String>("paths")
+        .get_many::<String>("args")
         .unwrap()
         .map(|s| s.to_string())
         .collect();
