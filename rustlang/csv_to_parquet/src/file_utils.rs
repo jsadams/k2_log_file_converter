@@ -30,8 +30,6 @@ pub fn replace_file_extension(csv_filename: &str, new_extension: &str) -> String
     return new_filename.to_str().unwrap().to_string();
 }
 
-
-
 pub fn create_dir_if_not_exists(path: &str) -> io::Result<()> {
     let path = Path::new(path);
     if !path.exists() {
@@ -61,7 +59,6 @@ pub fn get_file_size(file_path: &str) -> Result<u64, std::io::Error> {
     // Ok(())
 }
 
-
 // fn get_files_with_extension(dir: &str, extension: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
 //     let pattern = PathBuf::from(dir).join(format!("*.{}", extension));
 //
@@ -82,4 +79,3 @@ pub fn get_file_size(file_path: &str) -> Result<u64, std::io::Error> {
 //         .collect();
 //     paths
 // }
-
