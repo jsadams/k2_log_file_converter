@@ -18,13 +18,62 @@ use std::path::PathBuf;
 //use std::time::Instant;
 //use humantime::format_duration;
 use polars::error::PolarsError;
+use clap::Arg;
+use clap::Command;
+// use clap::{arg, command, value_parser, ArgAction, Command};
+// //use clap::{App, Subcommand};
+// use clap::App;
 
+//#[derive(Parser)]
+//#[command(version, about, long_about = None)]
 fn main() -> Result<(), PolarsError> {
 
-    //let start = Instant::now();
+    let matches = Command::new("myapp")
+        .version("1.0")
+        .about("An example CLI app")
+        .arg(
+            Arg::new("force")
+                .short('f')
+                .long("force")
+                .help("Forces the operation")
+                .action(clap::ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("outputdir")
+                .short('o')
+                .long("outputdir")
+                .value_name("outputdir")
+                .help("Specifies the output directory")
+                .value_parser(clap::value_parser!(String))
+                .default_value("./out")
+        )
+        .arg(
+            Arg::new("args")
+                .help("Additional arguments")
+                .num_args(1..)
+                .allow_hyphen_values(true),
+        )
+        .get_matches();
 
-    // Parse command-line arguments
-    let mut args = std::env::args().skip(1);
+    // let force = matches.get_flag("force");
+    // let outputdir = matches.get_one::<String>("outputdir").unwrap_or(&"default/output/dir".to_string());
+    let args: Vec<&String> = matches.get_many::<String>("args").unwrap_or_default().collect();
+
+    // Accessing specific arguments
+    let force = matches.get_flag("force");
+    let outputdir = matches.get_one::<String>("outputdir").expect("Expected outputdir");
+
+    //let mut args = std::env::args().skip(1);
+
+    println!("Force: {}", force);
+    println!("Output directory: {}", outputdir);
+    println!("Additional arguments: {:?}", args);
+
+        println!("Force: {}", force);
+        println!("Output directory: {}", outputdir);
+        println!("Additional arguments: {:?}", args);
+
+        // Parse command-line arguments
 
     let mut processed_files = 0;
     let total_files = args.len();
@@ -46,8 +95,9 @@ fn main() -> Result<(), PolarsError> {
     let mut total_delta_file_size = 0 as i64;
 
     // main loop
-
-    while let Some(csv_filename) = args.next() {
+    for csv_filename in args
+    {
+    //while let Some(csv_filename) = args.next() {
         let parquet_filename = file_utils::replace_file_extension(&csv_filename, ".parquet");
         let parquet_filename =
             file_utils::prepend_output_dir_to_filename(output_dir, &parquet_filename);
