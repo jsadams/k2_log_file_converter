@@ -5,9 +5,12 @@ mod csv_to_parquet_utils;
 mod file_utils;
 
 mod stopwatch;
+// mod file_processing_utils;
 
 //use std::fs::{File, OpenOptions};
 
+use clap::ValueHint;
+use std::fs;
 use std::path::Path;
 use std::fs::OpenOptions;
 //use indicatif::{ProgressBar, ProgressStyle};
@@ -26,6 +29,8 @@ use clap::Command;
 
 //#[derive(Parser)]
 //#[command(version, about, long_about = None)]
+
+// -f, --file <FILE>    Input file
 fn main() -> Result<(), PolarsError> {
 
     let matches = Command::new("myapp")
@@ -39,39 +44,86 @@ fn main() -> Result<(), PolarsError> {
                 .action(clap::ArgAction::SetTrue),
         )
         .arg(
-            Arg::new("outputdir")
+            Arg::new("output_dir")
                 .short('o')
-                .long("outputdir")
-                .value_name("outputdir")
+                .long("output_dir")
+                .value_name("DIR")
                 .help("Specifies the output directory")
                 .value_parser(clap::value_parser!(String))
-                .default_value("./out")
+                .default_value("./foo")
         )
         .arg(
             Arg::new("args")
-                .help("Additional arguments")
+                .help("Filenames or Directory to process")
                 .num_args(1..)
                 .allow_hyphen_values(true),
+        )
+        .arg(
+            Arg::new("default_input_extension")
+                .short('i')
+                .long("default_input_extenion")
+                //.value_name("output_dir")
+                .help("Specifies the default extension mask for input files in directory mode")
+                .value_parser(clap::value_parser!(String))
+                .default_value("*.dat")
+    )
+
+        .arg(
+        Arg::new("verbosity")
+            .short('v')
+            .long("verbosity")
+            .value_name("LEVEL")
+            .help("Set verbosity level (0-10)")
+            .default_value("2")
+            .value_parser(clap::value_parser!(i32).range(0..=10)),
+    )
+        .arg(
+            Arg::new("gain")
+                .short('g')
+                .long("gain")
+                .value_name("VALUE")
+                .help("Set gain value")
+                .default_value("1.0")
+                .value_parser(clap::value_parser!(f32)),
+
         )
         .get_matches();
 
     // let force = matches.get_flag("force");
     // let outputdir = matches.get_one::<String>("outputdir").unwrap_or(&"default/output/dir".to_string());
     let args: Vec<&String> = matches.get_many::<String>("args").unwrap_or_default().collect();
+    // let paths: Vec<&str> = matches.get_many::<String>("paths").unwrap().collect();
+    // let verbosity: i32 = matches.value_of_t("verbosity").unwrap();
+    // let gain: f32 = matches.value_of_t("gain").unwrap();
+    //
+    //let paths: Vec<&str> = matches.get_many::<String>("paths").unwrap().collect();
+    let verbosity: i32 = matches.get_one::<i32>("verbosity").unwrap().to_owned();
+    let gain: f32 = matches.get_one::<f32>("gain").unwrap().to_owned();
+
+
+    if args.len() == 1
+    {
+       // if there is only one arg on the command line, check if it is a directory
+        let filepath_0=args[0];
+        let metadata = fs::metadata(filepath_0)?;
+        if metadata.is_dir()
+        {
+
+            print!("{} is a directory",filepath_0)
+        }
+
+    }
 
     // Accessing specific arguments
     let force = matches.get_flag("force");
-    let outputdir = matches.get_one::<String>("outputdir").expect("Expected outputdir");
+    let output_dir = matches.get_one::<String>("output_dir").expect("Expected outputdir");
 
     //let mut args = std::env::args().skip(1);
 
     println!("Force: {}", force);
-    println!("Output directory: {}", outputdir);
+    println!("Output directory: {}", output_dir);
     println!("Additional arguments: {:?}", args);
 
-        println!("Force: {}", force);
-        println!("Output directory: {}", outputdir);
-        println!("Additional arguments: {:?}", args);
 
         // Parse command-line arguments
 
@@ -79,7 +131,7 @@ fn main() -> Result<(), PolarsError> {
     let total_files = args.len();
 
 
-    let output_dir = "./out";
+    //let output_dir = "./out";
     file_utils::create_dir_if_not_exists(output_dir)?;
 
     // Preamble for main loop

@@ -1,6 +1,6 @@
 [package]
 name = "csv_to_parquet"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 
 [dependencies]
@@ -11,4 +11,12 @@ parquet = "52.0.0"
 polars = { version = "0.40.0", features = ["avro", "csv", "parquet","lazy","serde"] }
 humantime = "2.1.0"
 clap = { version = "4.5.11", features = ["cargo", "derive"] }
+glob = "0.3.1"
+tempfile = "3.10.1"
 
+#[build-dependencies]
+#std = { version = "1" }
+
+[build-dependencies]
+#std = { version = "1" }
+dirs = "5"

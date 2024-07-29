@@ -1,3 +1,4 @@
+use glob::glob;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -29,6 +30,8 @@ pub fn replace_file_extension(csv_filename: &str, new_extension: &str) -> String
     return new_filename.to_str().unwrap().to_string();
 }
 
+
+
 pub fn create_dir_if_not_exists(path: &str) -> io::Result<()> {
     let path = Path::new(path);
     if !path.exists() {
@@ -57,3 +60,26 @@ pub fn get_file_size(file_path: &str) -> Result<u64, std::io::Error> {
     //
     // Ok(())
 }
+
+
+// fn get_files_with_extension(dir: &str, extension: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+//     let pattern = PathBuf::from(dir).join(format!("*.{}", extension));
+//
+//
+//     let paths = glob(&pattern.to_str().unwrap())?
+//         .filter_map(|ok| ok.ok())
+//         .map(|path| path.to_str().map(String::from))
+//         .collect();
+//     paths
+// }
+
+// fn get_glob_files(dir: &str, wildcard_patter:  str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+//     //let pattern = format!("{}/*.bar", dir);
+//     let pattern = format!("{}/{}", dir,);
+//     let paths: Result<Vec<_>, _> = glob(&pattern)?
+//         .filter_map(|ok| ok.ok())
+//         .map(|path| path.to_str().map(String::from))
+//         .collect();
+//     paths
+// }
+
