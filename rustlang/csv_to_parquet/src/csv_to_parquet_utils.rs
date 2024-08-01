@@ -5,6 +5,10 @@ use std::fs::OpenOptions;
 
 use polars::chunked_array::ChunkedArray;
 use polars::prelude::*;
+
+use crate::polars_conversion_utils;
+use crate::downsample_utils;
+
 //use polars::series::IsUtf8;
 
 // use std::fs::File;
@@ -198,12 +202,57 @@ use polars::prelude::*;
 //     Ok(())
 // }
 
-pub fn convert_csv_file_to_parquet_file(
-    csv_path: &str,
-    output_parquet_path: &str,
-) -> Result<(), PolarsError> {
+pub fn read_csv_file_into_df(csv_path: &str) -> Result<DataFrame, PolarsError>
+{
+
     let mut my_parse_options = CsvParseOptions::default();
     my_parse_options.separator = b' ';
+
+    let df_raw_result = CsvReadOptions::default()
+        .with_has_header(true)
+        .with_ignore_errors(true)
+        .with_parse_options(
+        CsvParseOptions::default()
+        .with_separator(b' ')
+        .with_truncate_ragged_lines(true)
+        .with_missing_is_null(true), //.with_null_values(999)
+        )
+        .try_into_reader_with_file_path(Some(csv_path.into()))?
+        .finish();
+
+        return df_raw_result;
+        // let df = match df_raw_result {
+        //     Ok(v) => v,
+        //     Err(e) => return Err(e.into()),
+        // };
+
+
+
+}
+
+pub fn write_df_to_parquet(mut df: DataFrame, output_parquet_path: &str) -> Result<(), PolarsError>
+{
+    // Write the DataFrame to Parquet file
+    let file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(&output_parquet_path)?;
+
+    let writer = ParquetWriter::new(file).with_compression(ParquetCompression::Snappy);
+
+    writer.finish(&mut df)?; // Handle potential error here
+
+
+
+    Ok(())
+}
+
+pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &str, do_downsampling: bool, downsample_period_sec: i64)
+    -> Result<(), PolarsError>
+{
+
+    // let mut my_parse_options = CsvParseOptions::default();
+    // my_parse_options.separator = b' ';
 
     // Read the CSV file directly
     //let file = OpenOptions::new().read(true).open(&csv_path)?;
@@ -216,46 +265,50 @@ pub fn convert_csv_file_to_parquet_file(
     //     .try_into_reader_with_file_path(Some(csv_path.into()))?
     //     .finish();
 
-    let df_raw_result = CsvReadOptions::default()
-        .with_has_header(true)
-        .with_ignore_errors(true)
-        .with_parse_options(
-            CsvParseOptions::default()
-                .with_separator(b' ')
-                .with_truncate_ragged_lines(true)
-                .with_missing_is_null(true), //.with_null_values(999)
-        )
-        .try_into_reader_with_file_path(Some(csv_path.into()))?
-        .finish();
+    // let df_raw_result = CsvReadOptions::default()
+    //     .with_has_header(true)
+    //     .with_ignore_errors(true)
+    //     .with_parse_options(
+    //         CsvParseOptions::default()
+    //             .with_separator(b' ')
+    //             .with_truncate_ragged_lines(true)
+    //             .with_missing_is_null(true), //.with_null_values(999)
+    //     )
+    //     .try_into_reader_with_file_path(Some(csv_path.into()))?
+    //     .finish();
 
-    let df = match df_raw_result {
-        Ok(v) => v,
-        Err(e) => return Err(e.into()),
-    };
+    // let df = match df_raw_result {
+    //     Ok(v) => v,
+    //     Err(e) => return Err(e.into()),
+    // };
 
-    let mut df: DataFrame = df.clone();
+    let mut df = read_csv_file_into_df(csv_path)?;
 
-    //     //df.with_columns(pl.all().cast(pl.Int32, strict=False))
-    //         let mut df_float = df
-    //             .clone()
-    //             .lazy()
-    //             .select([
-    //                 col("*").cast(DataType::Float64),
-    //             ])
-    //             .collect()?;
-    // //        }
-    //     //convert_columns_to_float_inplace(&mut df).expect("Conversion failed");
+    if do_downsampling
+    {
+        let columns_to_convert = ["tv_sec", "tv_usec"];
+
+        // Convert specified columns to Int64
+        df = polars_conversion_utils::convert_columns_to_int64(&df, &columns_to_convert)?;
+        //let df2=convert_i32_to_int64(&df1)?;
+
+        //println!("{:?}", df2);
+
+        df = downsample_utils::downsample_df_based_on_time(df, downsample_period_sec)?;
+    }
+
+    write_df_to_parquet(df,output_parquet_path)?;
+
+    // // Write the DataFrame to Parquet file
+    // let file = OpenOptions::new()
+    //     .create(true)
+    //     .write(true)
+    //     .open(&output_parquet_path)?;
     //
-
-    // Write the DataFrame to Parquet file
-    let file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .open(&output_parquet_path)?;
-
-    let writer = ParquetWriter::new(file).with_compression(ParquetCompression::Snappy);
-
-    writer.finish(&mut df)?; // Handle potential error here
+    // let writer = ParquetWriter::new(file).with_compression(ParquetCompression::Snappy);
+    //
+    // writer.finish(&mut df)?; // Handle potential error here
 
     return Ok(());
 }
+

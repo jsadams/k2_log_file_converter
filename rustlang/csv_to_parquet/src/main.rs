@@ -1,13 +1,16 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
+use std::string;
+
 mod csv_to_parquet_utils;
 mod file_utils;
 
 mod cli_interface_builder;
 ///mod cli_interface_derive;
 mod stopwatch;
-
+mod downsample_utils;
+mod polars_conversion_utils;
 // mod file_processing_utils;
 
 //use std::fs::{File, OpenOptions};
@@ -27,6 +30,10 @@ use clap::builder::Str;
 use polars::error::PolarsError;
 
 fn main() -> Result<(), PolarsError> {
+
+    let do_downsampling=true;
+    let downsample_period_sec = 60*2; // 2 minute in seconds
+
     let (mut output_dir, force, verbosity, args) = cli_interface_builder::process_cli_via_builder_api();
 
     //let (output_dir, force, verbosity, args)= cli_interface_derive::process_cli_via_derive_api();
@@ -50,8 +57,15 @@ fn main() -> Result<(), PolarsError> {
 
             //let args=OK(args);
 
-            output_dir=input_directory.to_owned() + "_parquet";
+            if do_downsampling
+            {
+                output_dir = input_directory.to_owned() + "_parquet_ds";
 
+
+            }
+            else {
+                output_dir = input_directory.to_owned() + "_parquet";
+            }
 
         }
     }
@@ -90,7 +104,18 @@ fn main() -> Result<(), PolarsError> {
     // main loop
     for csv_filename in files {
         //while let Some(csv_filename) = args.next() {
-        let parquet_filename = file_utils::replace_file_extension(&csv_filename, ".parquet");
+
+        let mut default_postfix = String::from("");
+        let default_extension = String::from(".parquet");
+
+        if do_downsampling
+        {
+            default_postfix = String::from("_ds");
+        }
+
+        //let postfix_plus_extension=default_postfix+default_extension;
+        let postfix_plus_extension=format!("{default_postfix}{default_extension}");
+        let parquet_filename = file_utils::replace_file_extension(&csv_filename, &postfix_plus_extension);
         let parquet_filename = file_utils::os_path_join(&output_dir, &parquet_filename);
 
         //let csv_filename: &str= &csv_filename;
@@ -102,10 +127,14 @@ fn main() -> Result<(), PolarsError> {
 
         let file_exists = parquet_filename_path.exists();
 
+
+
         if (!file_exists) || force {
             csv_to_parquet_utils::convert_csv_file_to_parquet_file(
                 &csv_filename,
                 &parquet_filename,
+                do_downsampling,
+                downsample_period_sec
             )?;
 
             let file_size_csv = file_utils::get_file_size(&csv_filename)?;
