@@ -3,4 +3,4 @@
 #reorder_imports = false
 # this is unstable
 #brace_style = "AlwaysNextLine"
-max_width = 300
+#max_width = 300
