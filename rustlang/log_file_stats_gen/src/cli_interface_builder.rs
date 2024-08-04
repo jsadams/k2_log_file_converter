@@ -52,7 +52,7 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
                 .long("downsample_period_sec")
                 .value_name("VALUE")
                 .help("Set the period over which to downsample")
-                .default_value("1.0")
+                .default_value("1")
                 .value_parser(clap::value_parser!(i32)),
 
         )
