@@ -87,12 +87,16 @@ fn group_by_and_mean_all_cols(df: &DataFrame, group_col: &str) -> Result<DataFra
 
 pub fn downsample_df_based_on_time(mut df: DataFrame, downsample_period_sec: i64) -> Result<DataFrame, PolarsError>
 {
+    let tv_sec_key=String::from("t_tv_sec");
+    let tv_usec_key=String::from("t_tv_usec");
+
+
     // Create a new column for the rounded timestamps
     let rounded_timestamps: Vec<i64> = df
-        .column("tv_sec")?
+        .column(&tv_sec_key)?
         .i64()?
         .into_iter()
-        .zip(df.column("tv_usec")?.i64()?)
+        .zip(df.column(&tv_usec_key)?.i64()?)
         .map(|(sec, usec)| {
             let sec = sec.unwrap();
             let usec = usec.unwrap();
@@ -127,17 +131,18 @@ pub fn downsample_df_based_on_time(mut df: DataFrame, downsample_period_sec: i64
     //
     // // Print the downsampled DataFrame
     
-    
-    
-    
-    
-    
-    
+
 }
+
 pub fn main_downsample_df() -> Result<(), PolarsError>  {
+
+    let tv_sec_key=String::from("t_tv_sec");
+    let tv_usec_key=String::from("t_tv_usec");
+
+
     // Sample data
-    let tv_sec = Series::new("tv_sec", &[1625077765, 1625077825, 1625077885, 1625077945, 1625078005]);
-    let tv_usec = Series::new("tv_usec", &[0, 0, 0, 0, 0]);
+    let tv_sec = Series::new(&tv_sec_key, &[1625077765, 1625077825, 1625077885, 1625077945, 1625078005]);
+    let tv_usec = Series::new(&tv_usec_key, &[0, 0, 0, 0, 0]);
     let value = Series::new("value", &[10, 20, 30, 40, 50]);
     let df1 = DataFrame::new(vec![tv_sec, tv_usec, value])?;
 
@@ -146,7 +151,7 @@ pub fn main_downsample_df() -> Result<(), PolarsError>  {
     println!("{:?}", df1);
     // Specify columns to convert to Int64
 
-    let columns_to_convert = ["tv_sec", "tv_usec"];
+    let columns_to_convert = [tv_sec_key.as_str(), &tv_usec_key.as_str()];
 
     // Convert specified columns to Int64
     let df2 = polars_conversion_utils::convert_columns_to_int64(&df1, &columns_to_convert)?;

@@ -2,9 +2,9 @@ use clap::Arg;
 use clap::Command;
 //use clap::{Parser, Subcommand};
 
-pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<String>) {
+pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<String>, bool, i32) {
     let matches = Command::new("myapp")
-        .version("1.0")
+        .version("2.0")
         .about("An example CLI app")
         .arg(
             Arg::new("force")
@@ -20,7 +20,7 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
                 .value_name("DIR")
                 .help("Specifies the output directory")
                 .value_parser(clap::value_parser!(String))
-                .default_value("./foo"),
+                .default_value("./output"),
         )
         .arg(
             Arg::new("args")
@@ -46,18 +46,28 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
                 .default_value("2")
                 .value_parser(clap::value_parser!(i32).range(0..=10)),
         )
-        // .arg(
-        //     Arg::new("gain")
-        //         .short('g')
-        //         .long("gain")
-        //         .value_name("VALUE")
-        //         .help("Set gain value")
-        //         .default_value("1.0")
-        //         .value_parser(clap::value_parser!(f32)),
-        //
-        // )
+        .arg(
+            Arg::new("downsample_period_sec")
+                .short('T')
+                .long("downsample_period_sec")
+                .value_name("VALUE")
+                .help("Set the period over which to downsample")
+                .default_value("1.0")
+                .value_parser(clap::value_parser!(i32)),
+
+        )
+        .arg(
+            Arg::new("do_downsampling")
+                .short('d')
+                .long("downsample")
+                .help("Downsample the data")
+                .action(clap::ArgAction::SetTrue),
+        )
+
         .get_matches();
 
+    let do_downsampling= matches.get_flag("do_downsampling");
+    let downsample_period_sec = matches.get_one::<i32>("downsample_period_sec").unwrap().to_owned();
     let force = matches.get_flag("force");
     let output_dir = matches.get_one::<String>("output_dir").unwrap().to_string();
     let verbosity: i32 = matches.get_one::<i32>("verbosity").unwrap().to_owned();
@@ -70,5 +80,5 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
         .map(|s| s.to_string())
         .collect();
 
-    (output_dir, force, verbosity, args)
+    (output_dir, force, verbosity, args, do_downsampling, downsample_period_sec)
 }

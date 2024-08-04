@@ -18,8 +18,12 @@ impl Stopwatch {
         return duration;
     }
 
-    pub fn elapsed_formatted_human(&self) -> FormattedDuration {
-        return format_duration(self.elapsed());
+    // pub fn elapsed_formatted_human(&self) -> FormattedDuration {
+    //     return format_duration(self.elapsed());
+    // }
+
+    pub fn elapsed_formatted_human(&self) -> String {
+        return format_duration(self.elapsed()).to_string();
     }
 }
 
