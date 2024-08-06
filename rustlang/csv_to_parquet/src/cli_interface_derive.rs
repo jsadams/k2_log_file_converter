@@ -1,21 +1,25 @@
+use clap::crate_version;
 use clap::Arg;
 use clap::Command;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
-#[command(name = "csv_to_parquet", version = "1.0", author = "jsadams<jsadams@umbc.edu>")]
+#[command(name = "csv_to_parquet",
+    author = "jsadams<jsadams@umbc.edu>",
+    version=crate_version!())]
+//#[command(name = "example", version = crate_version!())]
 pub struct Cli {
     #[clap(short = 'f', long = "force", help = "Forces conversion even if file exists")]
     pub force: bool,
 
-    #[clap(
-        short = 'o',
-        long = "output-dir",
-        value_name = "DIR",
-        help = "Specifies the output directory",
-        default_value = "./output"
-    )]
-    pub output_dir: String,
+    // #[clap(
+    //     short = 'o',
+    //     long = "output-dir",
+    //     value_name = "DIR",
+    //     help = "Specifies the output directory",
+    //     default_value = "./output"
+    // )]
+    // pub output_dir: String,
 
     #[clap(
         short = 'v',
@@ -48,6 +52,17 @@ pub struct Cli {
 
     #[clap(short = 'd', long = "decimate", help = "Forces a decimated output")]
     pub do_downsample: bool,
+
+
+    #[clap(
+        short = 'e',
+        long = "default_extension",
+        value_name = "STRING",
+        help = "Specifies the default input extension for directory mode",
+        default_value = ".dat"
+    )]
+    pub default_input_extension: String,
+
 }
 
 // pub fn process_cli_via_derive_api() -> (std::string::String, bool, i32, Vec<std::string::String>) {

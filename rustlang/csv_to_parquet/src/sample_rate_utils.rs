@@ -37,38 +37,16 @@ pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64
     // Create a Series from time_diffs_sec
     let time_diffs_series = Series::new("time_diffs", time_diffs_sec);
 
-    // Compute average, min, and max of time differences
-    // let mean_sample_time = time_diffs_sec.iter().copied().sum::<f64>() / time_diffs_sec.len() as f64;
-    // let min_sample_time = time_diffs_sec.iter().copied().fold(f64::INFINITY, f64::min);
-    // let max_sample_time = time_diffs_sec.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    // min gives Result<Option>> ? reduces each
 
     // Compute average, min, and max of time differences using Polars methods
     let mean_sample_time = time_diffs_series.mean().unwrap_or(f64::NAN);
-
-    //min<T>(&self) -> PolarsResult<Option<T>>
-    // https://stackoverflow.com/questions/42917566/what-is-this-question-mark-operator-about
-    // It is a postfix operator that unwraps Result<T, E> and Option<T> values.
-    //
-    //     If applied to Result<T, E>, it unwraps the result and gives you the inner value, propagating the error to the calling function.
-    //
-    // let number = "42".parse::<i32>()?;
-    // println!("{:?}", number); // 42
-    // When applied to an Option<T>, it propagates None to the caller, leaving you the content of the Some branch to deal with.
-    //
-    // let val = Some(42)?;
-    // println!("{:?}", val); // 42
-    // The ? operator can only be used in a function that returns Result or Option like so:
-
-    // // we can use expect if we want an error message
     let min_sample_time = time_diffs_series.min()?.unwrap_or(f64::NAN);
     let max_sample_time = time_diffs_series.max()?.unwrap_or(f64::NAN);
 
-    // min gives Result<Option>> ? reduces each
+
     //let min_sample_time = time_diffs_series.min()??;
     //let max_sample_time = time_diffs_series.max()??;
-
-    //let min_sample_time = time_diffs_series.min().unwrap_or(Some(f64::NAN))?;
-    //let max_sample_time = time_diffs_series.max().unwrap_or(Some(f64::NAN))?;
 
     Ok((mean_sample_time, min_sample_time, max_sample_time))
 }

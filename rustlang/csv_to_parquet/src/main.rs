@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
+use crate::file_utils::is_directory;
 use std::string;
 
 mod csv_to_parquet_utils;
@@ -32,13 +33,9 @@ use std::path::PathBuf;
 //use humantime::format_duration;
 use polars::error::PolarsError;
 
+
+
 fn main() -> Result<(), PolarsError> {
-    // let do_downsampling=true;
-    // let downsample_period_sec = 60*2; // 2 minute in seconds
-
-    //(output_dir, force, verbosity, args, do_downsampling, downsample_period_sec)
-
-    //let (mut output_dir, force, verbosity, args, do_downsampling, downsample_period_sec) = cli_interface_builder::process_cli_via_builder_api();
 
     let (cli, args) = cli_interface_derive::process_cli_via_derive_api();
 
@@ -46,44 +43,37 @@ fn main() -> Result<(), PolarsError> {
     let force = cli.force;
     let do_downsampling = cli.do_downsample;
     let downsampling_period_sec = cli.downsample_period_sec;
-    let mut output_dir = cli.output_dir.clone();
+    //let mut output_dir = cli.output_dir.clone();
     let verbosity = cli.verbosity;
+    let default_input_extension = cli.default_input_extension.as_str();
 
+    let mut output_dir=String::from(".");
     if args.len() == 1 {
         // if there is only one arg on the command line, check if it is a directory
         //let filepath_0=args[0];
         let first_element: &str = args.first().expect("no element");
-        let metadata = fs::metadata(first_element)?;
-        if metadata.is_dir() {
+        //let metadata = fs::metadata(first_element)?;
+        if is_directory(first_element)? {
             let input_directory = first_element;
 
             print!("{} is a directory", input_directory);
-            let wildcard_pattern = "*.dat";
 
-            let dir_and_pattern = file_utils::os_path_join(&input_directory, wildcard_pattern);
+                        // let dir_and_pattern = file_utils::os_path_join(&input_directory, wildcard_pattern);
+            //
+            // files = file_utils::get_files_matching_pattern(&dir_and_pattern).unwrap().clone();
 
-            files = file_utils::get_files_matching_pattern(&dir_and_pattern).unwrap().clone();
-
+            files =file_utils::get_files_inside_directory(input_directory,default_input_extension).unwrap().clone();
             //let args=OK(args);
             //let mut output_dir = output_dir.clone();
 
-            if do_downsampling {
-                output_dir = input_directory.to_owned() + "_parquet_ds";
+            output_dir = if do_downsampling {
+                input_directory.to_owned() + "_parquet_ds"
             } else {
-                output_dir = input_directory.to_owned() + "_parquet";
+                input_directory.to_owned() + "_parquet"
             }
         }
     }
 
-    // // Accessing specific arguments
-    // let force = matches.get_flag("force");
-    // let output_dir = matches.get_one::<String>("output_dir").expect("Expected outputdir");
-
-    //let mut args = std::env::args().skip(1);
-
-    println!("Force: {}", force);
-    println!("Output directory: {}", output_dir);
-    println!("Files to process: {:?}", files);
 
     // Parse command-line arguments
 
@@ -119,6 +109,8 @@ fn main() -> Result<(), PolarsError> {
 
         //let postfix_plus_extension=default_postfix+default_extension;
         let postfix_plus_extension = format!("{default_postfix}{default_extension}");
+
+
         let parquet_filename = file_utils::replace_file_extension(&csv_filename, &postfix_plus_extension);
         let parquet_filename = file_utils::os_path_join(&output_dir, &parquet_filename);
 
