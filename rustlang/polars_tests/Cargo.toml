@@ -1,0 +1,9 @@
+[package]
+name = "polars_tests"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+csv = "1.3.0"
+polars = { version = "0.40.0", features = ["lazy","polars-io"] }
+chrono = { version = "0.4", features = ["serde"] }
