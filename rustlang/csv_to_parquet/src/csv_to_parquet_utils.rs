@@ -8,6 +8,8 @@ use polars::prelude::*;
 
 use crate::polars_conversion_utils;
 use crate::downsample_utils;
+use crate::sample_rate_utils;
+use crate::decimation_utils;
 
 //use polars::series::IsUtf8;
 
@@ -284,18 +286,37 @@ pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &st
 
     let mut df = read_csv_file_into_df(csv_path)?;
 
+
+    //let do_decimation=true;
+
     if do_downsampling
     {
-        let columns_to_convert = ["tv_sec", "tv_usec"];
 
-        // Convert specified columns to Int64
-        df = polars_conversion_utils::convert_columns_to_int64(&df, &columns_to_convert)?;
-        //let df2=convert_i32_to_int64(&df1)?;
+        // Calculate statistics
+        //let (mean_time, max_time, min_time) = sample_rate_utils::calculate_sample_time_statistics(&df);
+        let (mean_time, _max_time, _min_time) = sample_rate_utils::calculate_sample_time_statistics(&df)?;
 
-        //println!("{:?}", df2);
+        let decimation_ratio=mean_time/(downsample_period_sec as f64);
 
-        df = downsample_utils::downsample_df_based_on_time(df, downsample_period_sec)?;
+        //let exact_range: f64 = 42.6;
+        let decimation_n: usize = decimation_ratio.floor() as usize;
+
+        df=decimation_utils::get_every_nth_sample(&df, decimation_n)?;
+
     }
+
+    // if do_downsampling
+    // {
+    //     let columns_to_convert = ["tv_sec", "tv_usec"];
+    //
+    //     // Convert specified columns to Int64
+    //     df = polars_conversion_utils::convert_columns_to_int64(&df, &columns_to_convert)?;
+    //     //let df2=convert_i32_to_int64(&df1)?;
+    //
+    //     //println!("{:?}", df2);
+    //
+    //     df = downsample_utils::downsample_df_based_on_time(df, downsample_period_sec)?;
+    // }
 
     write_df_to_parquet(df,output_parquet_path)?;
 

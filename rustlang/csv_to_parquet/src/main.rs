@@ -11,6 +11,8 @@ mod cli_interface_builder;
 mod stopwatch;
 mod downsample_utils;
 mod polars_conversion_utils;
+mod sample_rate_utils;
+mod decimation_utils;
 // mod file_processing_utils;
 
 //use std::fs::{File, OpenOptions};
