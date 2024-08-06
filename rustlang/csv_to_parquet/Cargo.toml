@@ -14,6 +14,7 @@ clap = { version = "4.5.11", features = ["cargo", "derive"] }
 glob = "0.3.1"
 tempfile = "3.10.1"
 chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0.86"
 
 #[build-dependencies]
 #std = { version = "1" }

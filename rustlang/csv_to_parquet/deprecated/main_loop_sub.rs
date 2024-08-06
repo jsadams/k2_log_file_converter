@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
-
+use anyhow::{Context, Result};
+use std::fmt::Error;
 use crate::file_utils::is_directory;
 use std::string;
 
@@ -15,7 +16,6 @@ mod polars_conversion_utils;
 mod sample_rate_utils;
 ///mod cli_interface_derive;
 mod stopwatch;
-//mod main_loop_sub;
 // mod file_processing_utils;
 
 //use std::fs::{File, OpenOptions};
@@ -35,7 +35,56 @@ use std::path::PathBuf;
 use polars::error::PolarsError;
 
 
-fn main() -> Result<(), PolarsError> {
+pub fn process_single_file(input_path: &str,output_parquet_path: &str, do_downsampling: bool, downsample_period_sec: f64)
+    -> Result<(), PolarsError> {
+
+    convert_csv_file_to_parquet_file(input_path,output_parquet_path,do_downsampling,downsample_period_sec)
+}
+
+pub fn process_directory(input_path: &str,output_parquet_path: &str, default_input_extension: &str, do_downsampling: bool, downsample_period_sec: f64,)
+    -> Result<(), PolarsError> {
+
+        assert!(is_directory(input_path));
+
+        // {
+        //     print!("{} is a directory", input_path);
+            //let mut file = File::open(path).context("Failed to open the file")?;
+            let input_pathnames = file_utils::get_files_inside_directory(input_path, default_input_extension).unwrap().clone();
+            //let args=OK(args);
+            //let mut output_dir = output_dir.clone();
+
+            let mut input_directory = input_path.to_owned() + "_parquet"
+
+            let input_directory =
+                if do_downsampling {
+                    input_path.to_owned() + "_parquet"
+                } else {
+                    input_path.to_owned() + "_parquet_ds"
+                }
+
+            for input_pathname_sub in input_pathnames {
+                process_directory_or_filename((input_pathname_sub, default_input_extension, do_downsampling)
+            }
+        }
+    // else { Err(e) => println!("An error occurred: {}", e)  }
+    // }
+
+
+
+pub fn process_directory_or_filename(input_path: &str, do_downsampling: bool, downsample_period_sec: f64,)
+    -> Result<(), PolarsError> {
+
+        if is_directory(input_path)?
+        {
+            process_directory(input_path,do_downsampling,downsample_period_sec)
+        }
+    else {
+           process_file(input_path,do_downsampling,downsample_period_sec)
+        }
+}
+
+
+        fn main() -> Result<(), PolarsError> {
 
     let (cli, args) = cli_interface_derive::process_cli_via_derive_api();
 
@@ -127,7 +176,7 @@ fn main() -> Result<(), PolarsError> {
 
         let file_exists = parquet_filename_path.exists();
 
-        if (!file_exists) || force {
+
             csv_to_parquet_utils::convert_csv_file_to_parquet_file(&input_pathname, &parquet_filename, do_downsampling, downsampling_period_sec.into())?;
 
             let file_size_csv = file_utils::get_file_size(&input_pathname)?;
@@ -166,4 +215,4 @@ fn main() -> Result<(), PolarsError> {
     println!("Total Time elapsed in is: {:?}", sw1.elapsed_formatted_human());
 
     Ok(())
-}
+}44
