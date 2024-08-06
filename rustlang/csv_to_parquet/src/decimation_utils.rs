@@ -1,4 +1,3 @@
-
 use polars::prelude::*;
 
 // fn get_every_nth_sample(df: &DataFrame, n: usize) -> Result<DataFrame, PolarsError> {
@@ -11,10 +10,7 @@ use polars::prelude::*;
 
 pub fn get_every_nth_sample(df: &DataFrame, n: usize) -> Result<DataFrame, PolarsError> {
     let len = df.height();
-    let mask: BooleanChunked = (0..len)
-        .map(|i| i % n == 0)
-        .collect::<BooleanChunked>()
-        .into();
+    let mask: BooleanChunked = (0..len).map(|i| i % n == 0).collect::<BooleanChunked>().into();
 
     let nth_sampled_df = df.filter(&mask)?;
 

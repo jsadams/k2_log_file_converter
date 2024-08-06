@@ -126,7 +126,6 @@ pub fn get_file_size(file_path: &str) -> Result<u64, std::io::Error> {
 //         .collect()
 // }
 
-
 // use glob::glob;
 // use std::path::PathBuf;
 

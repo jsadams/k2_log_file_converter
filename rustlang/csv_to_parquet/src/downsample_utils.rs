@@ -1,8 +1,7 @@
-use polars::prelude::*;
-use chrono::{NaiveDateTime, TimeZone, Utc, Duration};
-use std::collections::HashMap;
 use chrono::DateTime;
-
+use chrono::{Duration, NaiveDateTime, TimeZone, Utc};
+use polars::prelude::*;
+use std::collections::HashMap;
 
 use crate::polars_conversion_utils;
 
@@ -77,19 +76,14 @@ fn group_by_and_mean_all_cols(df: &DataFrame, group_col: &str) -> Result<DataFra
 
     // Perform the grouping and aggregation
     let lf = <polars::prelude::DataFrame as Clone>::clone(&df).lazy();
-    let out = lf
-        .group_by([col(group_col)])
-        .agg(agg_exprs)
-        .collect()?;
+    let out = lf.group_by([col(group_col)]).agg(agg_exprs).collect()?;
 
     Ok(out)
 }
 
-pub fn downsample_df_based_on_time(mut df: DataFrame, downsample_period_sec: i64) -> Result<DataFrame, PolarsError>
-{
-    let tv_sec_key=String::from("t_tv_sec");
-    let tv_usec_key=String::from("t_tv_usec");
-
+pub fn downsample_df_based_on_time(mut df: DataFrame, downsample_period_sec: i64) -> Result<DataFrame, PolarsError> {
+    let tv_sec_key = String::from("t_tv_sec");
+    let tv_usec_key = String::from("t_tv_usec");
 
     // Create a new column for the rounded timestamps
     let rounded_timestamps: Vec<i64> = df
@@ -110,7 +104,7 @@ pub fn downsample_df_based_on_time(mut df: DataFrame, downsample_period_sec: i64
     let rounded_series = Series::new("rounded_timestamp", rounded_timestamps);
     df.with_column(rounded_series)?;
 
-    let df_out=group_by_and_mean_all_cols(&df, "rounded_timestamp");
+    let df_out = group_by_and_mean_all_cols(&df, "rounded_timestamp");
 
     return df_out;
 
@@ -130,23 +124,17 @@ pub fn downsample_df_based_on_time(mut df: DataFrame, downsample_period_sec: i64
     // //     ])?;
     //
     // // Print the downsampled DataFrame
-    
-
 }
 
-pub fn main_downsample_df() -> Result<(), PolarsError>  {
-
-    let tv_sec_key=String::from("t_tv_sec");
-    let tv_usec_key=String::from("t_tv_usec");
-
+pub fn main_downsample_df() -> Result<(), PolarsError> {
+    let tv_sec_key = String::from("t_tv_sec");
+    let tv_usec_key = String::from("t_tv_usec");
 
     // Sample data
     let tv_sec = Series::new(&tv_sec_key, &[1625077765, 1625077825, 1625077885, 1625077945, 1625078005]);
     let tv_usec = Series::new(&tv_usec_key, &[0, 0, 0, 0, 0]);
     let value = Series::new("value", &[10, 20, 30, 40, 50]);
     let df1 = DataFrame::new(vec![tv_sec, tv_usec, value])?;
-
-
 
     println!("{:?}", df1);
     // Specify columns to convert to Int64
@@ -160,9 +148,7 @@ pub fn main_downsample_df() -> Result<(), PolarsError>  {
     println!("{:?}", df2);
     // Define the downsampling period (e.g., 1 minute)
     let downsample_period_sec = 60; // 1 minute in seconds
-    let df3=downsample_df_based_on_time(df2,downsample_period_sec);
-
-
+    let df3 = downsample_df_based_on_time(df2, downsample_period_sec);
 
     println!("{:?}", df3);
 

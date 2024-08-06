@@ -3,17 +3,9 @@ use clap::Command;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
-#[command(
-    name = "csv_to_parquet",
-    version = "1.0",
-    author = "jsadams<jsadams@umbc.edu>"
-)]
+#[command(name = "csv_to_parquet", version = "1.0", author = "jsadams<jsadams@umbc.edu>")]
 pub struct Cli {
-    #[clap(
-        short = 'f',
-        long = "force",
-        help = "Forces conversion even if file exists"
-    )]
+    #[clap(short = 'f', long = "force", help = "Forces conversion even if file exists")]
     pub force: bool,
 
     #[clap(
@@ -22,7 +14,7 @@ pub struct Cli {
         value_name = "DIR",
         help = "Specifies the output directory",
         default_value = "./output"
-        )]
+    )]
     pub output_dir: String,
 
     #[clap(
@@ -54,14 +46,8 @@ pub struct Cli {
     )]
     pub downsample_period_sec: f32,
 
-    #[clap(
-        short = 'd',
-        long = "decimate",
-        help = "Forces a decimated output"
-    )]
+    #[clap(short = 'd', long = "decimate", help = "Forces a decimated output")]
     pub do_downsample: bool,
-
-
 }
 
 // pub fn process_cli_via_derive_api() -> (std::string::String, bool, i32, Vec<std::string::String>) {
@@ -82,16 +68,12 @@ pub struct Cli {
 //     (output_dir, force, verbosity, args)
 // }
 
-pub fn process_cli_via_derive_api() ->  (Cli, Vec<std::string::String>) {
+pub fn process_cli_via_derive_api() -> (Cli, Vec<std::string::String>) {
     let cli = Cli::parse();
 
     // Access arguments as needed
     //let args: Vec<&str> = cli.paths.iter().map(|s| s as &str).collect();
-    let args: Vec<String> = cli
-        .paths
-        .iter()
-        .map(|s| std::string::String::from(s))
-        .collect();
+    let args: Vec<String> = cli.paths.iter().map(|s| std::string::String::from(s)).collect();
     // let verbosity = cli.verbosity;
     // //let gain = cli.gain;
     // let force = cli.force;

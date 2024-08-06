@@ -8,9 +8,7 @@ pub struct Stopwatch {
 
 impl Stopwatch {
     pub fn new() -> Stopwatch {
-        Stopwatch {
-            start_time: Instant::now(),
-        }
+        Stopwatch { start_time: Instant::now() }
     }
 
     pub fn elapsed(&self) -> Duration {

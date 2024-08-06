@@ -6,10 +6,10 @@ use std::fs::OpenOptions;
 use polars::chunked_array::ChunkedArray;
 use polars::prelude::*;
 
-use crate::polars_conversion_utils;
-use crate::downsample_utils;
-use crate::sample_rate_utils;
 use crate::decimation_utils;
+use crate::downsample_utils;
+use crate::polars_conversion_utils;
+use crate::sample_rate_utils;
 
 //use polars::series::IsUtf8;
 
@@ -204,9 +204,7 @@ use polars::prelude::*;
 //     Ok(())
 // }
 
-pub fn read_csv_file_into_df(csv_path: &str) -> Result<DataFrame, PolarsError>
-{
-
+pub fn read_csv_file_into_df(csv_path: &str) -> Result<DataFrame, PolarsError> {
     let mut my_parse_options = CsvParseOptions::default();
     my_parse_options.separator = b' ';
 
@@ -214,45 +212,38 @@ pub fn read_csv_file_into_df(csv_path: &str) -> Result<DataFrame, PolarsError>
         .with_has_header(true)
         .with_ignore_errors(true)
         .with_parse_options(
-        CsvParseOptions::default()
-        .with_separator(b' ')
-        .with_truncate_ragged_lines(true)
-        .with_missing_is_null(true), //.with_null_values(999)
+            CsvParseOptions::default()
+                .with_separator(b' ')
+                .with_truncate_ragged_lines(true)
+                .with_missing_is_null(true), //.with_null_values(999)
         )
         .try_into_reader_with_file_path(Some(csv_path.into()))?
         .finish();
 
-        return df_raw_result;
-        // let df = match df_raw_result {
-        //     Ok(v) => v,
-        //     Err(e) => return Err(e.into()),
-        // };
-
-
-
+    return df_raw_result;
+    // let df = match df_raw_result {
+    //     Ok(v) => v,
+    //     Err(e) => return Err(e.into()),
+    // };
 }
 
-pub fn write_df_to_parquet(mut df: DataFrame, output_parquet_path: &str) -> Result<(), PolarsError>
-{
+pub fn write_df_to_parquet(mut df: DataFrame, output_parquet_path: &str) -> Result<(), PolarsError> {
     // Write the DataFrame to Parquet file
-    let file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .open(&output_parquet_path)?;
+    let file = OpenOptions::new().create(true).write(true).open(&output_parquet_path)?;
 
     let writer = ParquetWriter::new(file).with_compression(ParquetCompression::Snappy);
 
     writer.finish(&mut df)?; // Handle potential error here
 
-
-
     Ok(())
 }
 
-pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &str, do_downsampling: bool, downsample_period_sec: f64)
-    -> Result<(), PolarsError>
-{
-
+pub fn convert_csv_file_to_parquet_file(
+    csv_path: &str,
+    output_parquet_path: &str,
+    do_downsampling: bool,
+    downsample_period_sec: f64,
+) -> Result<(), PolarsError> {
     // let mut my_parse_options = CsvParseOptions::default();
     // my_parse_options.separator = b' ';
 
@@ -286,44 +277,35 @@ pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &st
 
     let mut df = read_csv_file_into_df(csv_path)?;
 
-
     //let do_decimation=true;
 
-    if do_downsampling
-    {
+    if do_downsampling {
         let (mean_time, _max_time, _min_time) = sample_rate_utils::calculate_sample_time_statistics(&df)?;
 
-        let decimation_ratio=(downsample_period_sec as f64)/mean_time;
+        let decimation_ratio = (downsample_period_sec as f64) / mean_time;
         let decimation_n: usize = decimation_ratio.floor() as usize;
 
-        let (rows,_cols)=df.shape();
+        let (rows, _cols) = df.shape();
 
         print!("\nBefore: df.shape: {:?} (rows, columns)", df.shape());
-        print!("\n\tmean_sample_rate={}",mean_time);
-        print!("\t\tdownsample_period_sec={}",downsample_period_sec);
-        print!("\n\tdecimation_ratio={}",decimation_ratio);
-        print!("\n\tdecimation_n={}",decimation_n);
+        print!("\n\tmean_sample_rate={}", mean_time);
+        print!("\t\tdownsample_period_sec={}", downsample_period_sec);
+        print!("\n\tdecimation_ratio={}", decimation_ratio);
+        print!("\n\tdecimation_n={}", decimation_n);
 
-        if decimation_n >1
-        {
+        if decimation_n > 1 {
             df = decimation_utils::get_every_nth_sample(&df, decimation_n)?;
 
             print!("\n\tAfter: df.shape: {:?} (rows, columns)", df.shape());
 
-            let (rows_after,_cols_after)=df.shape();
+            let (rows_after, _cols_after) = df.shape();
 
-            println!("\n\trow reduction={}", rows as f64/rows_after as f64);
-
-        }else
-
-        {
+            println!("\n\trow reduction={}", rows as f64 / rows_after as f64);
+        } else {
             println!("No decimation: df.shape: {:?} (rows, columns)", df.shape());
 
             //println!("No decimation performed", df.shape());
-
         }
-
-
     }
 
     // if do_downsampling
@@ -339,7 +321,7 @@ pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &st
     //     df = downsample_utils::downsample_df_based_on_time(df, downsample_period_sec)?;
     // }
 
-    write_df_to_parquet(df,output_parquet_path)?;
+    write_df_to_parquet(df, output_parquet_path)?;
 
     // // Write the DataFrame to Parquet file
     // let file = OpenOptions::new()
@@ -353,4 +335,3 @@ pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &st
 
     return Ok(());
 }
-

@@ -1,10 +1,9 @@
-use polars::prelude::*;
 use polars::df;
+use polars::prelude::*;
 
 pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64), PolarsError> {
-
-    let tv_sec_key=String::from("t_tv_sec");
-    let tv_usec_key=String::from("t_tv_usec");
+    let tv_sec_key = String::from("t_tv_sec");
+    let tv_usec_key = String::from("t_tv_usec");
 
     // Convert tv_sec and tv_usec to a single timestamp in nanoseconds
     let tv_sec: &Series = df.column(&tv_sec_key)?;
@@ -16,14 +15,13 @@ pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64
     let tv_sec = tv_sec.cast(&DataType::Float64)?;
     let tv_usec = tv_usec.cast(&DataType::Float64)?;
 
-    let timestamps_ns: Vec<f64> = tv_sec.f64()?
+    let timestamps_ns: Vec<f64> = tv_sec
+        .f64()?
         .into_iter()
         .zip(tv_usec.f64()?.into_iter())
-        .map(|(sec_opt, usec_opt)| {
-            match (sec_opt, usec_opt) {
-                (Some(sec), Some(usec)) => sec * 1_000_000_000.0 + usec * 1_000.0,
-                _ => 0.0
-            }
+        .map(|(sec_opt, usec_opt)| match (sec_opt, usec_opt) {
+            (Some(sec), Some(usec)) => sec * 1_000_000_000.0 + usec * 1_000.0,
+            _ => 0.0,
         })
         .collect();
 
@@ -34,10 +32,7 @@ pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64
     }
 
     // Convert time differences to seconds as f64
-    let time_diffs_sec: Vec<f64> = time_diffs_ns
-        .iter()
-        .map(|&diff| diff as f64 / 1_000_000_000.0)
-        .collect();
+    let time_diffs_sec: Vec<f64> = time_diffs_ns.iter().map(|&diff| diff as f64 / 1_000_000_000.0).collect();
 
     // Create a Series from time_diffs_sec
     let time_diffs_series = Series::new("time_diffs", time_diffs_sec);
@@ -64,7 +59,6 @@ pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64
     // println!("{:?}", val); // 42
     // The ? operator can only be used in a function that returns Result or Option like so:
 
-
     // // we can use expect if we want an error message
     let min_sample_time = time_diffs_series.min()?.unwrap_or(f64::NAN);
     let max_sample_time = time_diffs_series.max()?.unwrap_or(f64::NAN);
@@ -73,16 +67,11 @@ pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64
     //let min_sample_time = time_diffs_series.min()??;
     //let max_sample_time = time_diffs_series.max()??;
 
-
     //let min_sample_time = time_diffs_series.min().unwrap_or(Some(f64::NAN))?;
     //let max_sample_time = time_diffs_series.max().unwrap_or(Some(f64::NAN))?;
 
-
-
-
     Ok((mean_sample_time, min_sample_time, max_sample_time))
 }
-
 
 pub fn main_calculate_time_statistics() -> Result<(), PolarsError> {
     // Sample data

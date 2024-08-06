@@ -54,7 +54,6 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
                 .help("Set the period over which to downsample")
                 .default_value("10.0")
                 .value_parser(clap::value_parser!(f32)),
-
         )
         .arg(
             Arg::new("do_downsampling")
@@ -63,10 +62,9 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
                 .help("Downsample the data")
                 .action(clap::ArgAction::SetTrue),
         )
-
         .get_matches();
 
-    let do_downsampling= matches.get_flag("do_downsampling");
+    let do_downsampling = matches.get_flag("do_downsampling");
     let downsample_period_sec = matches.get_one::<f32>("downsample_period_sec").unwrap().to_owned();
     let force = matches.get_flag("force");
     let output_dir = matches.get_one::<String>("output_dir").unwrap().to_string();
@@ -74,11 +72,7 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
     //let gain: f32 = matches.get_one::<f32>("gain").unwrap().to_owned();
 
     //let args: Vec<&str> = matches.get_many::<String>("paths").unwrap().collect();
-    let args: Vec<String> = matches
-        .get_many::<String>("args")
-        .unwrap()
-        .map(|s| s.to_string())
-        .collect();
+    let args: Vec<String> = matches.get_many::<String>("args").unwrap().map(|s| s.to_string()).collect();
 
     (output_dir, force, verbosity, args, do_downsampling, downsample_period_sec)
 }
