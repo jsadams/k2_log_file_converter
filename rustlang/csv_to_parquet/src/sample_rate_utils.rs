@@ -44,7 +44,6 @@ pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64
     let min_sample_time = time_diffs_series.min()?.unwrap_or(f64::NAN);
     let max_sample_time = time_diffs_series.max()?.unwrap_or(f64::NAN);
 
-
     //let min_sample_time = time_diffs_series.min()??;
     //let max_sample_time = time_diffs_series.max()??;
 

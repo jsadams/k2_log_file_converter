@@ -20,7 +20,6 @@ pub struct Cli {
     //     default_value = "./output"
     // )]
     // pub output_dir: String,
-
     #[clap(
         short = 'v',
         long = "verbosity",
@@ -53,7 +52,6 @@ pub struct Cli {
     #[clap(short = 'd', long = "decimate", help = "Forces a decimated output")]
     pub do_downsample: bool,
 
-
     #[clap(
         short = 'e',
         long = "default_extension",
@@ -62,7 +60,6 @@ pub struct Cli {
         default_value = ".dat"
     )]
     pub default_input_extension: String,
-
 }
 
 // pub fn process_cli_via_derive_api() -> (std::string::String, bool, i32, Vec<std::string::String>) {

@@ -1,0 +1,32 @@
+#build:
+#  cc main.c foo.c bar.c -o main#
+#
+#test: build
+#  ./test
+home_dir := env_var('HOME')
+
+sloc:
+  @echo "`wc -l *.c` lines of code"
+
+
+executable:
+  @echo The executable is at: {{just_executable()}}
+
+
+#rustfmt:
+#  find {{invocation_directory()}} -name \*.rs -exec rustfmt {} \;
+
+#test:
+#  echo "{{home_dir}}"
+
+
+
+#default: build test lint
+build:
+    cargo build
+
+fmt:
+    cargo fmt
+
+install:
+    cargo install --path . --root {{home_dir}}

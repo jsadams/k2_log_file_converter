@@ -18,11 +18,9 @@ use std::error::Error;
 //     // return new_filename_as_pathbuf.to_str().unwrap().to_string();
 // }
 
-pub fn is_directory(pathname: &str) -> Result<bool, std::io::Error>
-{
+pub fn is_directory(pathname: &str) -> Result<bool, std::io::Error> {
     Ok(fs::metadata(pathname)?.is_dir())
 }
-
 
 pub fn os_path_join(output_dir: &str, old_filename: &str) -> String {
     let old_filename_as_pathbuf = PathBuf::from(old_filename);
@@ -145,14 +143,11 @@ pub fn get_files_matching_pattern(pattern: &str) -> Result<Vec<String>, Box<dyn 
     Ok(string_paths)
 }
 
-pub fn get_files_inside_directory(input_directory: &str, default_input_extension: &str) -> Result<Vec<String>, Box<dyn std::error::Error>>
-{
-
+pub fn get_files_inside_directory(input_directory: &str, default_input_extension: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let starts_with_dot = default_input_extension.starts_with('.');
 
-    let optional_dot  = if starts_with_dot {"" } else {"."};
-    let wildcard_pattern=format!("*{}{}", optional_dot, default_input_extension);
-
+    let optional_dot = if starts_with_dot { "" } else { "." };
+    let wildcard_pattern = format!("*{}{}", optional_dot, default_input_extension);
 
     //println!("wildcard_paa")
     //print!("{} is a directory", input_directory);
@@ -162,5 +157,4 @@ pub fn get_files_inside_directory(input_directory: &str, default_input_extension
     let files = get_files_matching_pattern(&dir_and_pattern).unwrap().clone();
 
     return Ok(files);
-
 }

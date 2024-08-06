@@ -1,8 +1,8 @@
-use std::{env, fs};
 use std::path::PathBuf;
+use std::{env, fs};
 
-use std;
 use dirs;
+use std;
 
 // Cargo automatically sets several environment variables when running build scripts, including OUT_DIR and CARGO_BIN_NAME. These variables are crucial for build scripts to interact with the build process correctly.
 //
@@ -20,7 +20,6 @@ fn main() {
     // Get the target directory
     let out_dir = env::var("OUT_DIR").expect("Issuing retrieving OUT_DIR env variable");
     let target_dir = PathBuf::from(out_dir);
-
 
     // Determine the binary name
     let binary_name = env::var("CARGO_BIN_NAME").expect("Issuing retrieving CARGO_BIN_NAME env variable");

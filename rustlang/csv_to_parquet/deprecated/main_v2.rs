@@ -191,10 +191,7 @@ fn main() -> Result<(), PolarsError> {
         //     {
 
         // Write the DataFrame to Parquet file
-        let file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .open(&output_parquet_path)?;
+        let file = OpenOptions::new().create(true).write(true).open(&output_parquet_path)?;
 
         let writer = ParquetWriter::new(file).with_compression(ParquetCompression::Snappy);
 

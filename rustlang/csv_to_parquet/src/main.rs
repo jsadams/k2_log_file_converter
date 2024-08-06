@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 use crate::file_utils::is_directory;
-use std::string;
+use std::{io, string};
 
 mod csv_to_parquet_utils;
 mod file_utils;
@@ -34,12 +34,63 @@ use std::path::PathBuf;
 //use humantime::format_duration;
 use polars::error::PolarsError;
 
+fn get_vector_of_all_files(args: Vec<String>, do_downsampling: bool, default_input_extension: &str) -> Result<Vec<(String, String)>, std::io::Error> {
+    let mut vec_of_tuples: Vec<(String, String)> = Vec::new();
+
+    for arg_i in args {
+        //let mut input_pathnames: Vec<String> = Vec::new();
+
+        if is_directory(&arg_i)? {
+            let input_directory = arg_i;
+
+            print!("{} is a directory", input_directory);
+            let output_directory = if do_downsampling {
+                input_directory.to_owned() + "_parquet_ds"
+            } else {
+                input_directory.to_owned() + "_parquet"
+            };
+
+            let input_pathnames = file_utils::get_files_inside_directory(&input_directory, default_input_extension)
+                .unwrap()
+                .clone();
+
+            for input_filename_subdir in input_pathnames {
+                //let input_filename = input_filename_j;
+                vec_of_tuples.push((input_filename_subdir.clone(), output_directory.clone()));
+
+                if is_directory(&input_filename_subdir)? {
+                    println!("warning skipping subdirectory{}", input_filename_subdir)
+                }
+            }
+        } else {
+            let input_filename = arg_i;
+            let output_directory = String::from(".");
+
+            vec_of_tuples.push((input_filename, output_directory.clone()));
+        }
+    }
+
+    return Ok(vec_of_tuples);
+}
+
+fn get_postfix_plus_extension(do_downsampling: bool) -> String {
+    let mut default_postfix = String::from("");
+    let default_extension = String::from(".parquet");
+
+    if do_downsampling {
+        default_postfix = String::from("_ds");
+    }
+
+    //let postfix_plus_extension=default_postfix+default_extension;
+    let postfix_plus_extension = format!("{default_postfix}{default_extension}");
+
+    return postfix_plus_extension;
+}
 
 fn main() -> Result<(), PolarsError> {
-
     let (cli, args) = cli_interface_derive::process_cli_via_derive_api();
 
-    let mut input_pathnames: Vec<String> = args.clone();
+    //let mut input_pathnames: Vec<String> = args.clone();
     let force = cli.force;
     let do_downsampling = cli.do_downsample;
     let downsampling_period_sec = cli.downsample_period_sec;
@@ -47,45 +98,21 @@ fn main() -> Result<(), PolarsError> {
     let verbosity = cli.verbosity;
     let default_input_extension = cli.default_input_extension.as_str();
 
-    let mut output_dir=String::from(".");
-    if args.len() == 1 {
-        // if there is only one arg on the command line, check if it is a directory
-        //let filepath_0=args[0];
-        let first_element: &str = args.first().expect("no element");
-        //let metadata = fs::metadata(first_element)?;
-        if is_directory(first_element)? {
-            let input_directory = first_element;
+    //let mut output_dir=String::from(".");
 
-            print!("{} is a directory", input_directory);
-
-                        // let dir_and_pattern = file_utils::os_path_join(&input_directory, wildcard_pattern);
-            //
-            // files = file_utils::get_files_matching_pattern(&dir_and_pattern).unwrap().clone();
-
-            input_pathnames =file_utils::get_files_inside_directory(input_directory,default_input_extension).unwrap().clone();
-            //let args=OK(args);
-            //let mut output_dir = output_dir.clone();
-
-            output_dir = if do_downsampling {
-                input_directory.to_owned() + "_parquet_ds"
-            } else {
-                input_directory.to_owned() + "_parquet"
-            }
-        }
-    }
-
+    let vec_of_tuples = get_vector_of_all_files(args, do_downsampling, default_input_extension)?;
 
     // Parse command-line arguments
 
     let mut processed_files = 0;
-    let total_files = input_pathnames.len();
+    let n_total_files = vec_of_tuples.len();
 
     //let output_dir = "./out";
-    file_utils::create_dir_if_not_exists(&output_dir)?;
+    //file_utils::create_dir_if_not_exists(&output_dir)?;
 
     // Preamble for main loop
     let sw1 = stopwatch::Stopwatch::new();
-    let bar = ProgressBar::new(total_files as u64);
+    let bar = ProgressBar::new(n_total_files as u64);
 
     bar.set_style(
         ProgressStyle::default_bar()
@@ -96,24 +123,21 @@ fn main() -> Result<(), PolarsError> {
     let mut file_count = 0;
     let mut total_delta_file_size = 0 as i64;
 
+    let postfix_plus_extension = get_postfix_plus_extension(do_downsampling);
+
+    //let output_directory = String::from((".");
     // main loop
-    for input_pathname in input_pathnames {
+    //for input_pathname in input_pathnames {
 
-
-
+    // // Print the resulting vector of tuples
+    // for (first, second) in &result_vec {
+    //     println!("({}, {})", first, second);
+    // }
+    //
+    for (input_pathname, output_dir) in &vec_of_tuples {
+        file_utils::create_dir_if_not_exists(&output_dir)?;
 
         //while let Some(csv_filename) = args.next() {
-
-        let mut default_postfix = String::from("");
-        let default_extension = String::from(".parquet");
-
-        if do_downsampling {
-            default_postfix = String::from("_ds");
-        }
-
-        //let postfix_plus_extension=default_postfix+default_extension;
-        let postfix_plus_extension = format!("{default_postfix}{default_extension}");
-
 
         let parquet_filename = file_utils::replace_file_extension(&input_pathname, &postfix_plus_extension);
         let parquet_filename = file_utils::os_path_join(&output_dir, &parquet_filename);
@@ -152,8 +176,8 @@ fn main() -> Result<(), PolarsError> {
         }
 
         processed_files += 1;
-        let fraction_complete = processed_files as f64 / total_files as f64;
-        bar.set_message(format!("{}/{} {:.1}%", processed_files, total_files, fraction_complete * 100.0));
+        let fraction_complete = processed_files as f64 / n_total_files as f64;
+        bar.set_message(format!("{}/{} {:.1}%", processed_files, n_total_files, fraction_complete * 100.0));
         bar.inc(1);
 
         file_count += 1;

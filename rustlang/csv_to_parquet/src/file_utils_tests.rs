@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use glob::glob;
+use std::path::PathBuf;
 //use rstest::fixture;
 //
 // #[fixture]
@@ -34,9 +34,9 @@ mod tests {
 
     #[test]
     fn test_replace_file_extension() {
-        let csv_filename="foo.csv";
+        let csv_filename = "foo.csv";
         let new_extension = ".dat";
-        let new_filename=file_utils::replace_file_extension(csv_filename, new_extension);
+        let new_filename = file_utils::replace_file_extension(csv_filename, new_extension);
         assert_eq!("foo.dat", new_filename);
     }
 }

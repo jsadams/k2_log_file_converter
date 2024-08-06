@@ -125,17 +125,16 @@
 //     Ok(())
 // }
 
-use std::fs::{File, OpenOptions};
 use indicatif::{ProgressBar, ProgressStyle};
+use std::fs::{File, OpenOptions};
 use std::path::PathBuf;
 
 //use parquet::file::writer;
-use polars::prelude::*;
 use polars::prelude::CsvReader;
+use polars::prelude::*;
 
-use parquet::file::writer;
 use parquet;
-
+use parquet::file::writer;
 
 fn main() -> Result<(), PolarsError> {
     // Parse command-line arguments
@@ -165,26 +164,22 @@ fn main() -> Result<(), PolarsError> {
         //     .has_header(true) // Set header row if your CSV has a header
         //     .finish()?;
 
-        let df=
-            CsvReadOptions::default()
-                .with_has_header(true)
-                .try_into_reader_with_file_path(Some(csv_path.into()))?
-                .finish();
+        let df = CsvReadOptions::default()
+            .with_has_header(true)
+            .try_into_reader_with_file_path(Some(csv_path.into()))?
+            .finish();
 
-       // Write the DataFrame to Parquet file
+        // Write the DataFrame to Parquet file
         let parquet_file = OpenOptions::new().create(true).write(true).open(&output_parquet_path)?;
-        let writer = ParquetWriter::new(parquet_file)
-            .with_compression(ParquetCompression::Snappy);
+        let writer = ParquetWriter::new(parquet_file).with_compression(ParquetCompression::Snappy);
 
         writer.finish(&df)?; // Handle potential error here
-
 
         // // Write the DataFrame to a Parquet file
         // let file = File::create(&output_parquet_file)?;
         // ParquetWriter::new(file)
         //     .with_compression(ParquetCompression::Snappy)
         //     .finish(&df)?;
-
 
         println!("{:?}", df);
         processed_files += 1;
