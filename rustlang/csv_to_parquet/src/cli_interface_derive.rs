@@ -10,7 +10,7 @@ use clap::{Parser, Subcommand};
 )]
 pub struct Cli {
     #[clap(
-        short = "f",
+        short = 'f',
         long = "force",
         help = "Forces conversion even if file exists"
     )]
@@ -43,9 +43,46 @@ pub struct Cli {
         num_args = 1..
     )]
     pub paths: Vec<String>,
+
+    #[clap(
+        short = 'T',
+        long = "decimate_period_sec",
+        value_name = "VALUE",
+        help = "seconds over which to decimate",
+        default_value_t = 10.0,
+        value_parser = clap::value_parser!(f32)
+    )]
+    pub downsample_period_sec: f32,
+
+    #[clap(
+        short = 'd',
+        long = "decimate",
+        help = "Forces a decimated output"
+    )]
+    pub do_downsample: bool,
+
+
 }
 
-pub fn process_cli_via_derive_api() -> (std::string::String, bool, i32, Vec<std::string::String>) {
+// pub fn process_cli_via_derive_api() -> (std::string::String, bool, i32, Vec<std::string::String>) {
+//     let cli = Cli::parse();
+//
+//     // Access arguments as needed
+//     //let args: Vec<&str> = cli.paths.iter().map(|s| s as &str).collect();
+//     let args: Vec<String> = cli
+//         .paths
+//         .iter()
+//         .map(|s| std::string::String::from(s))
+//         .collect();
+//     let verbosity = cli.verbosity;
+//     //let gain = cli.gain;
+//     let force = cli.force;
+//     let output_dir = cli.output_dir;
+//
+//     (output_dir, force, verbosity, args)
+// }
+
+pub fn process_cli_via_derive_api() ->  (Cli, Vec<std::string::String>) {
     let cli = Cli::parse();
 
     // Access arguments as needed
@@ -55,10 +92,10 @@ pub fn process_cli_via_derive_api() -> (std::string::String, bool, i32, Vec<std:
         .iter()
         .map(|s| std::string::String::from(s))
         .collect();
-    let verbosity = cli.verbosity;
-    //let gain = cli.gain;
-    let force = cli.force;
-    let output_dir = cli.output_dir;
+    // let verbosity = cli.verbosity;
+    // //let gain = cli.gain;
+    // let force = cli.force;
+    // let output_dir = cli.output_dir;
 
-    (output_dir, force, verbosity, args)
+    (cli, args)
 }

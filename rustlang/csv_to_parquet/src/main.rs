@@ -13,6 +13,7 @@ mod downsample_utils;
 mod polars_conversion_utils;
 mod sample_rate_utils;
 mod decimation_utils;
+mod cli_interface_derive;
 // mod file_processing_utils;
 
 //use std::fs::{File, OpenOptions};
@@ -37,11 +38,18 @@ fn main() -> Result<(), PolarsError> {
     // let downsample_period_sec = 60*2; // 2 minute in seconds
 
     //(output_dir, force, verbosity, args, do_downsampling, downsample_period_sec)
-    let (mut output_dir, force, verbosity, args, do_downsampling, downsample_period_sec) = cli_interface_builder::process_cli_via_builder_api();
 
-    //let (output_dir, force, verbosity, args)= cli_interface_derive::process_cli_via_derive_api();
+    //let (mut output_dir, force, verbosity, args, do_downsampling, downsample_period_sec) = cli_interface_builder::process_cli_via_builder_api();
+
+    let (cli, args)= cli_interface_derive::process_cli_via_derive_api();
+
 
     let mut files:Vec<String>=args.clone();
+    let force=cli.force;
+    let do_downsampling=cli.do_downsample;
+    let downsampling_period_sec=cli.downsample_period_sec;
+    let mut output_dir=cli.output_dir.clone();
+    let verbosity=cli.verbosity;
 
     if args.len() == 1 {
         // if there is only one arg on the command line, check if it is a directory
@@ -59,6 +67,7 @@ fn main() -> Result<(), PolarsError> {
             files=file_utils::get_files_matching_pattern(&dir_and_pattern).unwrap().clone();
 
             //let args=OK(args);
+            //let mut output_dir = output_dir.clone();
 
             if do_downsampling
             {
@@ -137,7 +146,7 @@ fn main() -> Result<(), PolarsError> {
                 &csv_filename,
                 &parquet_filename,
                 do_downsampling,
-                downsample_period_sec.into()
+                downsampling_period_sec.into()
             )?;
 
             let file_size_csv = file_utils::get_file_size(&csv_filename)?;
