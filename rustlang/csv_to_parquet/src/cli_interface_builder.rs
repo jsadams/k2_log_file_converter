@@ -2,7 +2,7 @@ use clap::Arg;
 use clap::Command;
 //use clap::{Parser, Subcommand};
 
-pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<String>, bool, i32) {
+pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<String>, bool, f32) {
     let matches = Command::new("myapp")
         .version("2.0")
         .about("An example CLI app")
@@ -52,8 +52,8 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
                 .long("downsample_period_sec")
                 .value_name("VALUE")
                 .help("Set the period over which to downsample")
-                .default_value("1.0")
-                .value_parser(clap::value_parser!(i32)),
+                .default_value("10.0")
+                .value_parser(clap::value_parser!(f32)),
 
         )
         .arg(
@@ -67,7 +67,7 @@ pub fn process_cli_via_builder_api() -> (std::string::String, bool, i32, Vec<Str
         .get_matches();
 
     let do_downsampling= matches.get_flag("do_downsampling");
-    let downsample_period_sec = matches.get_one::<i32>("downsample_period_sec").unwrap().to_owned();
+    let downsample_period_sec = matches.get_one::<f32>("downsample_period_sec").unwrap().to_owned();
     let force = matches.get_flag("force");
     let output_dir = matches.get_one::<String>("output_dir").unwrap().to_string();
     let verbosity: i32 = matches.get_one::<i32>("verbosity").unwrap().to_owned();

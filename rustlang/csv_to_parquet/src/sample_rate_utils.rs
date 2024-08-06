@@ -2,9 +2,19 @@ use polars::prelude::*;
 use polars::df;
 
 pub fn calculate_sample_time_statistics(df: &DataFrame) -> Result<(f64, f64, f64), PolarsError> {
+
+    let tv_sec_key=String::from("t_tv_sec");
+    let tv_usec_key=String::from("t_tv_usec");
+
     // Convert tv_sec and tv_usec to a single timestamp in nanoseconds
-    let tv_sec: &Series = df.column("tv_sec")?;
-    let tv_usec: &Series = df.column("tv_usec")?;
+    let tv_sec: &Series = df.column(&tv_sec_key)?;
+    let tv_usec: &Series = df.column(&tv_usec_key)?;
+
+    // let tv_sec = tv_sec.cast(&DataType::Int64)?;
+    // let tv_usec = tv_sec.cast(&DataType::Int64)?;
+
+    let tv_sec = tv_sec.cast(&DataType::Float64)?;
+    let tv_usec = tv_usec.cast(&DataType::Float64)?;
 
     let timestamps_ns: Vec<f64> = tv_sec.f64()?
         .into_iter()

@@ -249,7 +249,7 @@ pub fn write_df_to_parquet(mut df: DataFrame, output_parquet_path: &str) -> Resu
     Ok(())
 }
 
-pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &str, do_downsampling: bool, downsample_period_sec: i64)
+pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &str, do_downsampling: bool, downsample_period_sec: f64)
     -> Result<(), PolarsError>
 {
 
@@ -291,17 +291,38 @@ pub fn convert_csv_file_to_parquet_file(csv_path: &str, output_parquet_path: &st
 
     if do_downsampling
     {
-
-        // Calculate statistics
-        //let (mean_time, max_time, min_time) = sample_rate_utils::calculate_sample_time_statistics(&df);
         let (mean_time, _max_time, _min_time) = sample_rate_utils::calculate_sample_time_statistics(&df)?;
 
-        let decimation_ratio=mean_time/(downsample_period_sec as f64);
-
-        //let exact_range: f64 = 42.6;
+        let decimation_ratio=(downsample_period_sec as f64)/mean_time;
         let decimation_n: usize = decimation_ratio.floor() as usize;
 
-        df=decimation_utils::get_every_nth_sample(&df, decimation_n)?;
+        let (rows,_cols)=df.shape();
+
+        print!("\nBefore: df.shape: {:?} (rows, columns)", df.shape());
+        print!("\n\tmean_sample_rate={}",mean_time);
+        print!("\t\tdownsample_period_sec={}",downsample_period_sec);
+        print!("\n\tdecimation_ratio={}",decimation_ratio);
+        print!("\n\tdecimation_n={}",decimation_n);
+
+        if decimation_n >1
+        {
+            df = decimation_utils::get_every_nth_sample(&df, decimation_n)?;
+
+            print!("\n\tAfter: df.shape: {:?} (rows, columns)", df.shape());
+
+            let (rows_after,_cols_after)=df.shape();
+
+            println!("\n\trow reduction={}", rows as f64/rows_after as f64);
+
+        }else
+
+        {
+            println!("No decimation: df.shape: {:?} (rows, columns)", df.shape());
+
+            //println!("No decimation performed", df.shape());
+
+        }
+
 
     }
 
