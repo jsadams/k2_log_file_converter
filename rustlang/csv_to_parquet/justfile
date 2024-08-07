@@ -1,8 +1,10 @@
-#build:
-#  cc main.c foo.c bar.c -o main#
-#
-#test: build
-#  ./test
+# Local Variables:
+# mode: makefile
+# End:
+
+# https://github.com/casey/just
+# https://just.systems/man/en/
+
 home_dir := env_var('HOME')
 
 sloc:
@@ -24,6 +26,9 @@ executable:
 #default: build test lint
 build:
     cargo build
+
+build-release:
+    cargo build --release
 
 fmt:
     cargo fmt
